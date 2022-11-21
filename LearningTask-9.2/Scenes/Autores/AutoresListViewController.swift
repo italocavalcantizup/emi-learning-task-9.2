@@ -8,6 +8,11 @@
 import UIKit
 
 class AutoresListViewController: UITableViewController {
+    
+    private enum Segues: String {
+        case verFormNovoAutorSegue = "verFormNovoAutorSegue"
+        case verDetalhesDoAutorSegue = "verDetalhesDoAutorSegue"
+    }
 
     var autorAPI: AutoresAPI?
     var livrosAPI: LivrosAPI?
@@ -39,15 +44,33 @@ class AutoresListViewController: UITableViewController {
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard segue.identifier == "verDetalhesDoAutorSegue" else { return }
-    
-        guard let celula = sender as? AutorTableViewCell,
-              let autorViewController = segue.destination as? AutorViewController else {
-            fatalError("Não foi possível executar segue \(segue.identifier!)")
+        guard let segueId = segue.identifier,
+              let segueEsperada = AutoresListViewController.Segues(rawValue: segueId) else { return }
+        
+        switch segueEsperada {
+        case .verDetalhesDoAutorSegue:
+            prepareVerDetalhesDoAutor(for: segue, sender: sender)
+        default:
+            prepareFormNovoAutor(for: segue, sender: sender)
+        }
+        
+        func prepareVerDetalhesDoAutor(for segue: UIStoryboardSegue, sender: Any?) {
+            guard let celula = sender as? AutorTableViewCell,
+                  let autorViewController = segue.destination as? AutorViewController else {
+                fatalError("Não foi possível executar segue \(segue.identifier!)")
+            }
+            autorViewController.livrosAPI = livrosAPI
+            autorViewController.autor = celula.autor
+        }
+        
+        func prepareFormNovoAutor(for segue: UIStoryboardSegue, sender: Any?) {
+            guard let destination = segue.destination as? NovoAutorViewController else {
+                fatalError("Não foi possível executar a segue: \(segue.identifier!)")
+            }
+            destination.delegate = self
         }
     
-        autorViewController.livrosAPI = livrosAPI
-        autorViewController.autor = celula.autor
+        
     }
     
 }
@@ -88,4 +111,10 @@ extension AutoresListViewController {
         return headerView
     }
     
+}
+
+extension AutoresListViewController: NovoAutorViewControllerDelegate {
+    func novoAutorViewController(_ controller: NovoAutorViewController, adicionou autor: Autor) {
+        autores.append(autor)
+    }
 }

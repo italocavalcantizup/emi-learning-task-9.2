@@ -7,9 +7,15 @@
 
 import UIKit
 
+protocol NovoAutorViewControllerDelegate: AnyObject {
+    func novoAutorViewController(_ controller: NovoAutorViewController, adicionou autor: Autor)
+}
+
 class NovoAutorViewController: UIViewController {
 
     typealias MensagemDeValidacao = String
+    
+    weak var delegate: NovoAutorViewControllerDelegate?
     
     @IBOutlet weak var fotoTextField: UITextField!
     @IBOutlet weak var nomeTextField: UITextField!
@@ -34,7 +40,16 @@ class NovoAutorViewController: UIViewController {
             
         default:
             cadastraAutor()
+            self.dismiss(animated: true)
         }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard segue.identifier == "verCampoNovaTecnologiaSegue" else { return }
+        guard let destination = segue.destination as? NovaTecnologiaViewController else {
+            fatalError("Não foi possível executar a segue: \(segue.identifier!)")
+        }
+        destination.delegate = self
     }
     
     private func nomeDeAutorValido(_ nome: String) -> Bool {
@@ -73,7 +88,11 @@ class NovoAutorViewController: UIViewController {
     }
     
     func cadastraAutor() {
-       // lógica vai aqui
+        let nome = nomeTextField.text!.split(separator: " ")
+        let sobrenome = nome.filter({$0 != nome.first}).joined(separator: " ")
+        print(sobrenome)
+        let autor = Autor(foto: fotoTextField.text!, nome: String(nome.first!), sobrenome: sobrenome, bio: bioTextField.text!, tecnologias: tecnologias)
+        delegate?.novoAutorViewController(self, adicionou: autor)
     }
 
 }
@@ -93,4 +112,10 @@ extension NovoAutorViewController: UITableViewDataSource {
         return celula
     }
     
+}
+
+extension NovoAutorViewController: NovaTecnologiaViewControllerDelegate {
+    func novaTecnologiaViewController(_ controller: NovaTecnologiaViewController, adicionou tecnologia: String) {
+        tecnologias.append(tecnologia)
+    }
 }
