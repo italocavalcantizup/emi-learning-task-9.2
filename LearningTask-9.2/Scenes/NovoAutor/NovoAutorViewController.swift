@@ -88,10 +88,8 @@ class NovoAutorViewController: UIViewController {
     }
     
     func cadastraAutor() {
-        let nome = nomeTextField.text!.split(separator: " ")
-        let sobrenome = nome.filter({$0 != nome.first}).joined(separator: " ")
-        print(sobrenome)
-        let autor = Autor(foto: fotoTextField.text!, nome: String(nome.first!), sobrenome: sobrenome, bio: bioTextField.text!, tecnologias: tecnologias)
+        let (nome, sobrenome) = separa(nomeDeAutor: nomeTextField.text!)
+        let autor = Autor(foto: fotoTextField.text!, nome: nome, sobrenome: sobrenome, bio: bioTextField.text!, tecnologias: tecnologias)
         delegate?.novoAutorViewController(self, adicionou: autor)
     }
 
